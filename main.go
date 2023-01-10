@@ -7,6 +7,6 @@ import (
 
 func main() {
 	router := gin.Default()
-	router.GET("/calculate/", flights.GetStartAndEnd)
+	router.POST("/calculate/", flights.GetStartAndEnd)
 	router.Run("localhost:8080")
 }

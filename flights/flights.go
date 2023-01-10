@@ -2,8 +2,10 @@ package flights
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type flight struct {
@@ -11,22 +13,33 @@ type flight struct {
 	End   string `json:"end"`
 }
 
+type airports struct {
+	Paths string `json:"paths" binding:"required"`
+}
+
 func GetStartAndEnd(c *gin.Context) {
-	data, ok := c.GetQuery("path")
+	var data airports
 	var flights []flight
 	var arr [][]string
 	start := ""
 	end := ""
 
-	err := json.Unmarshal([]byte(data), &arr)
-
-	if !ok {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "missing path queryparam."})
+	if err := c.ShouldBind(&data); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "you have to provide appropriate body."})
+		fmt.Println(err)
 		return
 	}
 
-	if err != nil {
+	fmt.Println(data)
+
+	// if data.paths == "" {
+	// 	c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "body can not be empty."})
+	// 	return
+	// }
+
+	if err := json.Unmarshal([]byte(data.Paths), &arr); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "data is not valid"})
+		fmt.Println(err)
 		return
 	}
 
