@@ -1,6 +1,7 @@
 package flights
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -11,12 +12,33 @@ type flight struct {
 }
 
 func GetStartAndEnd(c *gin.Context) {
+	data, ok := c.GetQuery("path")
 	var flights []flight
+	var arr [][]string
+	start := ""
+	end := ""
 
-	if err := c.BindJSON(&flights); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Body is not valid"})
+	err := json.Unmarshal([]byte(data), &arr)
+
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "missing path queryparam."})
 		return
 	}
+
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "data is not valid"})
+		return
+	}
+
+	for _, i := range arr {
+		f := flight{
+			Start: i[0],
+			End:   i[1],
+		}
+
+		flights = append(flights, f)
+	}
+
 	starts := make(map[string]bool)
 	ends := make(map[string]bool)
 
@@ -33,9 +55,6 @@ func GetStartAndEnd(c *gin.Context) {
 			ends[i.Start] = true
 		}
 	}
-
-	start := ""
-	end := ""
 
 	for i := range starts {
 		if !starts[i] {
